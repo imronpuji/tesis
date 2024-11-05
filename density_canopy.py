@@ -146,7 +146,7 @@ def find_optimal_k_with_silhouette(data, min_k=3, max_k=64, threshold1=0.5, thre
 
 if __name__ == "__main__":
     # Path to root folder containing subfolders with images
-    root_folder = "./corns"
+    root_folder = "./resized_images_corns/train"
 
     # Load image data and labels
     data, labels, class_names = load_images_with_labels(root_folder)

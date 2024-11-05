@@ -69,5 +69,5 @@ def process_and_save_images(input_dir, output_dir, k_values, n_jobs=-1):
 # Example usage
 input_directory = "./corns"
 output_directory = "segmented_images"
-k_values = [3]
+k_values = [2]
 process_and_save_images(input_directory, output_directory, k_values, n_jobs=-1)

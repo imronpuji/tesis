@@ -4,14 +4,19 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.optimizers import Adam
 
 def create_vgg16_model(input_shape, num_classes):
-    """Create VGG16 model without adding custom fully connected layers."""
-    base_model = VGG16(weights='imagenet', include_top=True)  # Keep the fully connected layers
+    """Create VGG16 model with ImageNet weights."""
+    # Load the VGG16 model pre-trained on ImageNet, keeping the top layers
+    base_model = VGG16(weights='imagenet', include_top=True, input_shape=input_shape)
+
+    for layer in base_model.layers[:-4]:
+        layer.trainable = False
+
+    # Adjust the output layer to fit the number of classes
+    x = base_model.layers[-2].output  # Get the output from the second to last layer
+    outputs = tf.keras.layers.Dense(num_classes, activation='softmax')(x)  # New output layer for your classes
     
-    # Adjust the last layer to fit the number of classes
-    model = tf.keras.models.Model(
-        inputs=base_model.input,
-        outputs=tf.keras.layers.Dense(num_classes, activation='softmax')(base_model.layers[-2].output)
-    )
+    # Create the model
+    model = tf.keras.models.Model(inputs=base_model.input, outputs=outputs)
     
     # Compile the model with an appropriate optimizer and loss function
     model.compile(optimizer=Adam(learning_rate=0.0001), loss='categorical_crossentropy', metrics=['accuracy'])
@@ -47,12 +52,12 @@ def train_vgg16_model(train_dir, val_dir, input_shape, batch_size, epochs, num_c
     return model
 
 # Example usage
-train_directory = "./segmented_images_tomato/train/k3"
-val_directory = "./segmented_images_tomato/val"
-input_shape = (224, 224, 3)
+train_directory = "./segmented_images/train/k2"
+val_directory = "./segmented_images/val"
+input_shape = (224, 224, 3)  # Input shape for VGG16
 batch_size = 32
-epochs = 25
-num_classes = 11  # Assuming 3 classes for corn leaf diseases
+epochs = 10
+num_classes = 3  # Assuming 3 classes for corn leaf diseases
 
 trained_model = train_vgg16_model(train_directory, val_directory, input_shape, batch_size, epochs, num_classes)
 
@@ -84,5 +89,5 @@ def evaluate_model(model, test_directory, input_shape, batch_size):
     print(confusion_matrix(true_classes, predicted_classes))
 
 # Example usage
-test_directory = "./segmented_images_tomato/val"
+test_directory = "./segmented_images/val"
 evaluate_model(trained_model, test_directory, input_shape, batch_size)
