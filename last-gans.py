@@ -384,7 +384,7 @@ def main():
     
     # Parameters
     latent_dim = 100
-    n_epochs = 300
+    n_epochs = 1000
     batch_size = 32
     
     # Set device

@@ -1,0 +1,13 @@
+{
+    "training_time": "0:00:07.269574",
+    "device": "cpu",
+    "num_epochs": 1,
+    "batch_size": 32,
+    "learning_rate": 0.001,
+    "final_metrics": {
+        "accuracy": 0.18518518518518517,
+        "precision": 0.8938271604938272,
+        "recall": 0.18518518518518517,
+        "f1": 0.13447971781305115
+    }
+}

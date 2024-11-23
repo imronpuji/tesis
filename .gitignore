@@ -4,3 +4,12 @@ segmented_images/
 tomatos/
 segmented_images_tomato/
 corns/
+/generated_images
+/generated_images_blight
+/generated_images_cr
+/generated_images_glsf
+/generated_images_hl
+/data_hl
+/data_cr
+/data_blight
+/data
