@@ -72,27 +72,31 @@ class Generator(nn.Module):
 class Discriminator(nn.Module):
     def __init__(self, nc=3, ndf=64):
         super(Discriminator, self).__init__()
-        
-        def discriminator_block(in_filters, out_filters, bn=True, kernel_size=4, stride=2, padding=1):
-            block = [nn.Conv2d(in_filters, out_filters, kernel_size, stride, padding, bias=False)]
-            if bn:
-                block.append(nn.BatchNorm2d(out_filters))
-            block.append(nn.LeakyReLU(0.2, inplace=True))
-            return block
-
-        self.model = nn.Sequential(
-            *discriminator_block(nc, ndf, bn=False),          # 144x144 -> 72x72
-            *discriminator_block(ndf, ndf * 2),              # 72x72 -> 36x36
-            *discriminator_block(ndf * 2, ndf * 4),          # 36x36 -> 18x18
-            *discriminator_block(ndf * 4, ndf * 8),          # 18x18 -> 9x9
-            nn.Conv2d(ndf * 8, 1, kernel_size=9, stride=1, padding=0),  # 9x9 -> 1x1
+        self.main = nn.Sequential(
+            # input is (nc) x 144 x 144
+            spectral_norm(nn.Conv2d(nc, ndf, 4, 2, 1, bias=False)),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (ndf) x 72 x 72
+            spectral_norm(nn.Conv2d(ndf, ndf * 2, 4, 2, 1, bias=False)),
+            nn.BatchNorm2d(ndf * 2),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (ndf*2) x 36 x 36
+            spectral_norm(nn.Conv2d(ndf * 2, ndf * 4, 4, 2, 1, bias=False)),
+            nn.BatchNorm2d(ndf * 4),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (ndf*4) x 18 x 18
+            spectral_norm(nn.Conv2d(ndf * 4, ndf * 8, 4, 2, 1, bias=False)),
+            nn.BatchNorm2d(ndf * 8),
+            nn.LeakyReLU(0.2, inplace=True),
+            # state size. (ndf*8) x 9 x 9
+            spectral_norm(nn.Conv2d(ndf * 8, 1, 9, 1, 0, bias=False)),
             nn.Sigmoid()
         )
 
     def forward(self, x):
-        return self.model(x).view(-1)
+        return self.main(x).view(-1)  # Flatten to [batch_size]
 
-def train_dcgan(data_loader, device, nz=100, num_epochs=300):
+def train_dcgan(data_loader, device, nz=100, num_epochs=1000):
     # Models
     netG = Generator(nz=nz).to(device)
     netD = Discriminator().to(device)
